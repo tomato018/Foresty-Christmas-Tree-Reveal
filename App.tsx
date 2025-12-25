@@ -6,6 +6,15 @@ import HandTracker from './components/HandTracker';
 import { generateChristmasTree } from './services/geminiService';
 import { TreeStyle, TreeData } from './types';
 
+// Generate random points for the twinkle effect
+const TWINKLE_POINTS = Array.from({ length: 12 }).map(() => ({
+  top: Math.random() * 80 + 10 + '%',
+  left: Math.random() * 60 + 20 + '%',
+  delay: Math.random() * 5 + 's',
+  duration: 2 + Math.random() * 3 + 's',
+  size: 4 + Math.random() * 6 + 'px'
+}));
+
 const App: React.FC = () => {
   const [treeData, setTreeData] = useState<TreeData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -44,7 +53,6 @@ const App: React.FC = () => {
   const handleRevealed = () => {
     if (!isRevealed) {
       setIsRevealed(true);
-      // Delayed entrance for the "Merry Christmas" text
       setTimeout(() => setShowText(true), 400);
     }
   };
@@ -66,56 +74,43 @@ const App: React.FC = () => {
 
   const handleDownload = async () => {
     if (!treeData) return;
-
-    // Create an off-screen canvas to merge text and image
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set high quality resolution (3:4 aspect ratio)
     const width = 1200;
     const height = 1600;
     canvas.width = width;
     canvas.height = height;
 
-    // 1. Draw Background
     ctx.fillStyle = '#050505';
     ctx.fillRect(0, 0, width, height);
 
-    // 2. Load and Draw Tree Image FIRST (to layer correctly)
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.src = treeData.imageUrl;
 
     await new Promise((resolve) => {
       img.onload = () => {
-        // Calculate image size to fit in the bottom 75% of the canvas
         const imgHeight = height * 0.75;
         const imgWidth = (imgHeight * 3) / 4;
         const x = (width - imgWidth) / 2;
-        const y = height * 0.22; // Start below the text area
-
+        const y = height * 0.22;
         ctx.drawImage(img, x, y, imgWidth, imgHeight);
         resolve(true);
       };
     });
 
-    // 3. Draw "Merry Christmas" Text
-    // Ensure the font is loaded before drawing
     await document.fonts.load("italic 110px 'Great Vibes'");
-    
     ctx.font = "italic 110px 'Great Vibes', cursive";
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    
-    // Add glow
     ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
     ctx.shadowBlur = 30;
     ctx.fillText('Merry Christmas', width / 2, height * 0.12);
     ctx.shadowBlur = 0;
 
-    // 4. Trigger Download
     const dataUrl = canvas.toDataURL('image/png');
     const link = document.createElement('a');
     link.download = `Christmas_Art_${Date.now()}.png`;
@@ -127,14 +122,9 @@ const App: React.FC = () => {
     <div className="relative w-full h-screen overflow-hidden flex flex-col items-center bg-[#050505] font-sans">
       <Snowfall />
 
-      {/* Background Content Layer */}
       {treeData && (
         <div className="absolute inset-0 flex flex-col items-center z-0 px-4 py-6 justify-center gap-4">
-          
-          {/* Main Container for Text and Tree */}
           <div className="flex flex-col items-center max-w-full w-fit">
-            
-            {/* Top Text: "Merry Christmas" */}
             <div className="w-full flex justify-center items-center h-[10vh] flex-shrink-0 mb-2">
               <h1 
                 className={`font-cursive text-white text-center drop-shadow-[0_0_15px_rgba(255,255,255,0.6)] transition-all duration-[1500ms] ease-out select-none
@@ -146,7 +136,6 @@ const App: React.FC = () => {
               </h1>
             </div>
             
-            {/* Main Tree Container: Maintaining 3:4 aspect ratio */}
             <div 
               className={`relative flex items-center justify-center transition-all duration-[2000ms] ease-in-out transform
                 ${isRevealed ? 'scale-100 opacity-100' : 'scale-95 grayscale-[0.3] brightness-50 opacity-80'}
@@ -161,13 +150,31 @@ const App: React.FC = () => {
                     className={`w-full h-full object-cover transition-transform duration-[3000ms] ${isRevealed ? 'scale-105' : 'scale-100'}`}
                   />
                   
-                  {/* Magic Shimmer Effect on Reveal */}
+                  {/* Twinkling Lights Layer */}
+                  {isRevealed && (
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                      {TWINKLE_POINTS.map((pt, i) => (
+                        <div 
+                          key={i}
+                          className="absolute bg-white rounded-full blur-[2px] animate-twinkle shadow-[0_0_10px_white]"
+                          style={{
+                            top: pt.top,
+                            left: pt.left,
+                            width: pt.size,
+                            height: pt.size,
+                            animationDelay: pt.delay,
+                            animationDuration: pt.duration
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+
                   {isRevealed && (
                     <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent animate-shimmer pointer-events-none" />
                   )}
                 </div>
 
-                {/* Sparkle Particles on reveal */}
                 {isRevealed && (
                   <div className="absolute -inset-8 pointer-events-none overflow-visible">
                      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-yellow-400 rounded-full blur-xl animate-ping" />
@@ -179,7 +186,6 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Footer: Magic Buttons in a row */}
           <div className="w-full h-[8vh] flex items-center justify-center gap-3 md:gap-6 flex-shrink-0">
             {isRevealed && (
               <>
@@ -204,12 +210,10 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Hand Interaction Controller */}
       {isStarted && !loading && (
         <HandTracker onMove={handleHandMove} isReady={!!treeData} isStarted={isStarted} />
       )}
 
-      {/* Hand Cursor Indicator */}
       {!isRevealed && fingerPos.x > 0 && isStarted && (
         <div 
           className="fixed z-50 w-16 h-16 rounded-full pointer-events-none blur-3xl bg-white/20 shadow-[0_0_40px_rgba(255,255,255,0.2)]"
@@ -219,12 +223,10 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Interactive Fog Layer */}
       {!loading && treeData && isStarted && (
         <WipeCanvas ref={wipeCanvasRef} onRevealed={handleRevealed} isReady={!!treeData} />
       )}
 
-      {/* Loading State */}
       {loading && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95">
           <div className="w-12 h-12 border-4 border-white/5 border-t-white rounded-full animate-spin mb-8 shadow-[0_0_15px_rgba(255,255,255,0.1)]" />
@@ -232,7 +234,6 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Welcome Start Overlay */}
       {!isStarted && !loading && treeData && (
         <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-[#050505]/95 backdrop-blur-3xl transition-all duration-700">
           <div className="max-w-md w-full px-12 text-center">
@@ -261,11 +262,18 @@ const App: React.FC = () => {
           0% { transform: translateX(-100%) skewX(-15deg); }
           100% { transform: translateX(200%) skewX(-15deg); }
         }
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.2; transform: scale(0.8); }
+          50% { opacity: 1; transform: scale(1.2); filter: brightness(1.5); }
+        }
         .animate-float {
           animation: float 5s ease-in-out infinite;
         }
         .animate-shimmer {
           animation: shimmer 5s infinite;
+        }
+        .animate-twinkle {
+          animation: twinkle linear infinite;
         }
       `}</style>
     </div>

@@ -13,7 +13,6 @@ export interface WipeCanvasHandle {
 const WipeCanvas = forwardRef<WipeCanvasHandle, WipeCanvasProps>(({ onRevealed, isReady }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [revealedPercentage, setRevealedPercentage] = useState(0);
   const [isFinalReveal, setIsFinalReveal] = useState(false);
 
   const scratch = useCallback((x: number, y: number) => {
@@ -25,35 +24,22 @@ const WipeCanvas = forwardRef<WipeCanvasHandle, WipeCanvasProps>(({ onRevealed, 
 
     ctx.globalCompositeOperation = 'destination-out';
     
-    // Create a "cracked ice" scratch effect
-    const radius = 65; 
+    // Standard smooth circular wipe effect (classic finger on steam)
+    const radius = 55; 
     
-    // Primary clear circle
+    // Use a radial gradient for a soft, realistic "steamy" edge
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+    gradient.addColorStop(0.7, 'rgba(0, 0, 0, 1)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    
+    ctx.fillStyle = gradient;
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fill();
-    
-    // Add "cracks" around the scratch point for extra detail
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = 'black'; // destination-out doesn't care about color, just alpha
-    for (let i = 0; i < 6; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const length = radius + Math.random() * 40;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + Math.cos(angle) * length, y + Math.sin(angle) * length);
-      ctx.stroke();
-    }
-    
-    // Smooth the edges slightly
-    ctx.filter = 'blur(12px)';
-    ctx.beginPath();
-    ctx.arc(x, y, radius - 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.filter = 'none';
 
     // Periodically check reveal percentage
-    if (Math.random() > 0.92) {
+    if (Math.random() > 0.95) {
       checkRevealed();
     }
   }, [isFinalReveal]);
@@ -73,43 +59,29 @@ const WipeCanvas = forwardRef<WipeCanvasHandle, WipeCanvasProps>(({ onRevealed, 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // Fill with multi-layered frost effect
-    ctx.fillStyle = '#f0f4f8';
+    // Fill with a classic high-opacity frosted glass color
+    ctx.fillStyle = 'rgba(235, 242, 250, 0.98)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Frost texture 1: Grainy white
-    ctx.globalAlpha = 0.4;
-    for (let i = 0; i < 15000; i++) {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
-    }
-
-    // Frost texture 2: Radial gradient for "cold" corners
-    ctx.globalAlpha = 1.0;
-    const gradient = ctx.createRadialGradient(
-      canvas.width / 2, canvas.height / 2, 0,
-      canvas.width / 2, canvas.height / 2, canvas.width
-    );
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
-    gradient.addColorStop(0.7, 'rgba(210, 230, 255, 0.4)');
-    gradient.addColorStop(1, 'rgba(180, 210, 240, 0.7)');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Frost texture 3: Ice patches
+    // Add subtle fine grain for realism
     ctx.globalAlpha = 0.15;
-    for (let i = 0; i < 100; i++) {
-      const px = Math.random() * canvas.width;
-      const py = Math.random() * canvas.height;
-      const r = Math.random() * 150 + 50;
-      const grad = ctx.createRadialGradient(px, py, 0, px, py, r);
-      grad.addColorStop(0, '#ffffff');
-      grad.addColorStop(1, 'transparent');
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(px, py, r, 0, Math.PI * 2);
-      ctx.fill();
+    for (let i = 0; i < 25000; i++) {
+      ctx.fillStyle = '#ffffff';
+      const size = Math.random() * 1.5;
+      ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, size, size);
     }
+    
+    // Add a soft vignette to the edges for depth
+    ctx.globalAlpha = 1.0;
+    const grad = ctx.createRadialGradient(
+      canvas.width / 2, canvas.height / 2, 0,
+      canvas.width / 2, canvas.height / 2, canvas.width * 0.9
+    );
+    grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    grad.addColorStop(1, 'rgba(190, 215, 240, 0.4)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
     ctx.globalAlpha = 1.0;
   }, []);
 
@@ -127,14 +99,13 @@ const WipeCanvas = forwardRef<WipeCanvasHandle, WipeCanvasProps>(({ onRevealed, 
 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
     let transparentCount = 0;
-    // Faster sampling
-    for (let i = 3; i < imageData.length; i += 32) {
-      if (imageData[i] === 0) transparentCount += 8;
+    // Fast sampling to calculate transparency
+    for (let i = 3; i < imageData.length; i += 64) {
+      if (imageData[i] < 100) transparentCount += 16;
     }
     const percent = (transparentCount / (canvas.width * canvas.height)) * 100;
-    setRevealedPercentage(percent);
     
-    if (percent > 40 && !isFinalReveal) {
+    if (percent > 38 && !isFinalReveal) {
       setIsFinalReveal(true);
       onRevealed();
     }
@@ -170,18 +141,16 @@ const WipeCanvas = forwardRef<WipeCanvasHandle, WipeCanvasProps>(({ onRevealed, 
     scratch(x, y);
   };
 
-  // Shatter / Melt transition styles
   const revealStyle = isFinalReveal 
     ? {
-        filter: 'blur(40px) brightness(2.0) contrast(1.5)',
-        transform: 'scale(1.2) rotate(2deg)',
+        filter: 'blur(40px)',
         opacity: 0,
-        transition: 'all 2.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'filter 2s ease, opacity 2.2s ease',
         pointerEvents: 'none' as const
       }
     : {
         opacity: 1,
-        transition: 'opacity 0.3s ease'
+        transition: 'opacity 0.5s ease'
       };
 
   return (

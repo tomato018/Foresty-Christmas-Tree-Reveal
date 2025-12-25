@@ -5,21 +5,20 @@ import { TreeStyle } from "../types";
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 const STYLE_PROMPTS: Record<TreeStyle, string> = {
-  [TreeStyle.REALISTIC]: "A breathtakingly realistic, majestic Christmas fir tree, captured with a professional macro lens. Intricate frost on deep green needles, cinematic warm golden string lights, elegant hand-blown glass ornaments. Soft bokeh, high-end studio photography, dark atmospheric background.",
-  [TreeStyle.CARTOON]: "A cozy storybook-style Christmas tree illustration, Ghibli-inspired hand-painted textures. Vibrant colors, soft glowing lanterns, whimsical ornaments, charming and detailed line art, enchanting holiday atmosphere, dark navy background.",
-  [TreeStyle.WATERCOLOR]: "A masterpiece watercolor painting of a Christmas tree. Ethereal washes of emerald and gold, artistic paint splatters, delicate white glowing dots for lights, dreamlike and fluid, painted on high-quality textured paper, dark charcoal artistic background.",
-  [TreeStyle.NEON]: "A sleek futuristic Christmas tree made of glowing fiber optic cables and neon glass tubes. Vibrant cyan and magenta luminescence, high-tech aesthetic, digital art, sharp edges, pure black obsidian background.",
-  [TreeStyle.ORIGAMI]: "A stunning origami Christmas tree folded from luxury metallic and washi papers. Precise geometric folds, subtle pearlescent sheen, intricate patterns, minimal and sophisticated paper art, dark dramatic background.",
-  [TreeStyle.GOLDEN]: "A luxurious Christmas tree made of swirling liquid gold and sparkling diamond dust. Hyper-detailed particles, glowing magical aura, opulent and shimmering, silhouette of pure light, dark velvet background.",
-  [TreeStyle.STAINED_GLASS]: "A magnificent stained glass Christmas tree mosaic. Intricate leaded lines, vibrant translucent jewel-toned glass panels, light glowing from behind the glass, cathedral art style, kaleidoscopic colors, dark background.",
-  [TreeStyle.GEOMETRIC]: "An abstract, modern geometric Christmas tree. Minimalist triangular forms, clean architectural lines, sophisticated color palette of forest green and copper, contemporary art museum style, dark minimal background.",
-  [TreeStyle.OIL_PAINTING]: "A rich, textured oil painting of a Christmas tree in the style of the Old Masters. Thick impasto brushstrokes, deep shadows and brilliant highlights, warm amber glow, classical fine art masterpiece, dark canvas background.",
-  [TreeStyle.CYBERPUNK]: "A gritty, high-detail cyberpunk Christmas tree. Glitch art effects, holographic projections, glowing circuit patterns, integrated tech wires, rainy neon city night aesthetic, dark rainy background."
+  [TreeStyle.REALISTIC]: "A breathtakingly realistic, majestic Christmas tree with a soft amber glow. Intricate pine needles with light dusting of snow, warm golden string lights, classic glass ornaments. Professional photography, shallow depth of field, cozy living room atmosphere in the background, very warm color palette.",
+  [TreeStyle.CARTOON]: "A high-end 'realistic cartoon' style illustration, reminiscent of classic hand-painted Disney or Ghibli backgrounds. Rich gouache textures, soft glowing lanterns, whimsical warm details, nostalgic holiday charm, vibrant but warm colors, thick painterly edges.",
+  [TreeStyle.WATERCOLOR]: "An exquisite watercolor and ink painting of a Christmas tree. Flowing washes of deep forest green and gold, artistic bleeding edges, delicate white highlights, warm candlelight reflections, expressive brushwork on textured paper.",
+  [TreeStyle.NEON]: "Artistic synthwave Christmas tree with a warm retro-glow. Soft neon tubes in gold and crimson, cinematic bloom, digital painting with high-end textures, nostalgic 80s holiday aesthetic, dark warm background.",
+  [TreeStyle.ORIGAMI]: "Sophisticated paper-art Christmas tree. Hand-folded from warm ivory and gold parchment, soft studio lighting creating gentle shadows, intricate paper textures, elegant and tactile fine art style.",
+  [TreeStyle.GOLDEN]: "A masterpiece painting of a tree made of liquid gold and warm embers. Glowing particles, ethereal light, rich impasto textures, opulent and shimmering, dark velvet atmosphere with golden reflections.",
+  [TreeStyle.STAINED_GLASS]: "A glowing stained glass mosaic Christmas tree. Warm light pouring through amber, ruby, and emerald glass panels. Intricate leaded lines, kaleidoscopic warm reflections, cathedral-like atmosphere.",
+  [TreeStyle.GEOMETRIC]: "Modern artistic interpretation of a tree. Warm wooden triangular forms with copper accents, clean architectural lines, sophisticated amber lighting, contemporary art museum aesthetic, organic textures.",
+  [TreeStyle.OIL_PAINTING]: "A classic Old Masters oil painting of a Christmas tree. Heavy impasto brushstrokes, rich textures, dramatic chiaroscuro lighting with a strong warm amber glow, deep shadows, timeless fine art masterpiece.",
+  [TreeStyle.CYBERPUNK]: "A detailed 'Cyber-Noir' Christmas tree. Warm holographic projections of ornaments, soft orange and red neon wires, rainy atmospheric city window reflection, rich digital paint texture, cozy-futuristic vibe."
 };
 
 export const generateChristmasTree = async (style: TreeStyle): Promise<string> => {
   try {
-    // Strengthen the global prompt instructions to ensure a single centered tree
     const prompt = `
       SUBJECT: One magnificent, centrally-aligned Christmas tree.
       STYLE: ${STYLE_PROMPTS[style]}.
@@ -28,9 +27,10 @@ export const generateChristmasTree = async (style: TreeStyle): Promise<string> =
       1. Generate ONLY one single tree in the center of the frame.
       2. The tree MUST have a beautiful, glowing star or topper.
       3. Use a 3:4 vertical composition.
-      4. The background must be dark, solid, or atmospheric to make the tree pop.
-      5. NO landscapes, NO people, NO outdoor scenes, NO multiple trees.
-      6. Avoid generic low-quality 3D renders; prioritize artistic depth, texture, and high-end aesthetic beauty.
+      4. COLOR PALETTE: Emphasize warm golds, deep ambers, and rich festive reds.
+      5. AVOID: Do NOT produce generic 3D renders, plastic CGI, or sterile low-poly art. 
+      6. TEXTURE: Prioritize rich, organic, and painterly textures (oil paint, gouache, or high-end photography).
+      7. The background must be dark and atmospheric to make the warm lighting pop.
     `.trim();
     
     const response = await ai.models.generateContent({
@@ -54,7 +54,6 @@ export const generateChristmasTree = async (style: TreeStyle): Promise<string> =
     throw new Error("No image data received from Gemini");
   } catch (error) {
     console.error("Error generating Christmas tree:", error);
-    // Return a themed fallback placeholder if API fails
     return `https://images.unsplash.com/photo-1543589077-47d81606c1bf?auto=format&fit=crop&q=80&w=1200&h=1600`;
   }
 };
