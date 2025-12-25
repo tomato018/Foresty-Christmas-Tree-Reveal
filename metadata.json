@@ -1,0 +1,7 @@
+{
+  "name": "Frosty Christmas Reveal",
+  "description": "Wipe away the frosty window with your hand via camera to reveal beautiful, AI-generated Christmas trees.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
