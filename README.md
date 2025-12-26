@@ -21,9 +21,13 @@ View this app in AI Studio: [https://ai.studio/apps/drive/1BLE2Ax_agg-9iGXhZq7S8
 
 # App intro
 
-Before you start wiping the glass, make sure your camera permission is turned on._
-Just simply by moving your hands up and down/left and right, you can wipe the 'dirty glass' on the screen._
-When 40-50% of the screen is wiped, you can get a random Christmas tree card for wishes._
-It's a good way to have fun and take a break._
+Before you start wiping the glass, make sure your camera permission is turned on.
+
+Just simply by moving your hands up and down/left and right, you can wipe the 'dirty glass' on the screen.
+
+When 40-50% of the screen is wiped, you can get a random Christmas tree card for wishes.
+
+It's a good way to have fun and take a break.
+
 Invite your friends to begin your wiping project and see what surprise you'll find!
 
