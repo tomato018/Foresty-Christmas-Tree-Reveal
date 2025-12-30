@@ -6,18 +6,7 @@
 
 This contains everything you need to run your app locally.
 
-View this app in AI Studio: [https://ai.studio/apps/drive/1BLE2Ax_agg-9iGXhZq7S8s8lV2Jf_JH_](https://aistudio.google.com/apps/drive/1BLE2Ax_agg-9iGXhZq7S8s8lV2Jf_JH_)
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+View this app via vercel: https://foresty-christmas-tree-reveal.vercel.app/
 
 # App intro
 
